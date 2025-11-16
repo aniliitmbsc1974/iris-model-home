@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iris-model-ml-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: iris-model-ml-service
+  template:
+    metadata:
+      labels:
+        app: iris-model-ml-service
+    spec:
+      serviceAccountName: telemetry-access  # See below
+      containers:
+      - name: fastapi-container
+        image: asia-south2-docker.pkg.dev/grounded-pager-470001-b6/iris-repo/model_api:latest
+        ports:
+        - containerPort: 8200
+        readinessProbe:
+          httpGet:
+            path: /ready_check
+            port: 8200
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /live_check
+            port: 8200
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+
